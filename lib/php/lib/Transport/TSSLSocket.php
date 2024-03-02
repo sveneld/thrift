@@ -36,7 +36,7 @@ class TSSLSocket extends TSocket
     /**
      * Remote port
      *
-     * @var resource
+     * @var null|resource
      */
     protected $context_ = null;
 
@@ -57,7 +57,12 @@ class TSSLSocket extends TSocket
     ) {
         $this->host_ = $this->getSSLHost($host);
         $this->port_ = $port;
-        $this->context_ = $context;
+        // Initialize a stream context if not provided
+        if ($this->context_ === null) {
+            $this->context_ = stream_context_create();
+        } else {
+            $this->context_ = $context;
+        }
         $this->debugHandler_ = $debugHandler ? $debugHandler : 'error_log';
     }
 
@@ -87,7 +92,8 @@ class TSSLSocket extends TSocket
             throw new TTransportException('Socket already connected', TTransportException::ALREADY_OPEN);
         }
 
-        if (empty($this->host_)) {
+        $host = parse_url($this->host_, PHP_URL_HOST);
+        if (empty($host)) {
             throw new TTransportException('Cannot open null host', TTransportException::NOT_OPEN);
         }
 
