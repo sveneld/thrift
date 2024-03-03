@@ -130,7 +130,7 @@ class TBufferedTransportTest extends TestCase
             'expectedBufferValue' => '',
             'expectedRead' => '1234567890',
         ];
-        yield 'buffer fully readed' => [
+        yield 'buffer fully read' => [
             'startBuffer' => '12345',
             'readLength' => 5,
             'bufferReadLength' => 0,
