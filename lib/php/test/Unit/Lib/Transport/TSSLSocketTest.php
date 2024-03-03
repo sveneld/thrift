@@ -23,6 +23,7 @@
 
 namespace Test\Thrift\Unit\Lib\Transport;
 
+use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 use Thrift\Exception\TException;
 use Thrift\Exception\TTransportException;
@@ -30,6 +31,8 @@ use Thrift\Transport\TSSLSocket;
 
 class TSSLSocketTest extends TestCase
 {
+    use PHPMock;
+
     /**
      * @dataProvider openExceptionDataProvider
      */
@@ -38,6 +41,7 @@ class TSSLSocketTest extends TestCase
         $port,
         $context,
         $debugHandler,
+        $streamSocketClientCallCount,
         $expectedException,
         $expectedMessage,
         $expectedCode
@@ -45,6 +49,18 @@ class TSSLSocketTest extends TestCase
         $this->expectException($expectedException);
         $this->expectExceptionMessage($expectedMessage);
         $this->expectExceptionCode($expectedCode);
+
+        $this->getFunctionMock('Thrift\Transport', 'stream_socket_client')
+             ->expects($this->exactly($streamSocketClientCallCount))
+             ->with(
+                 'ssl://' . $host . ':' . $port,
+                 $this->anything(), #$errno,
+                 $this->anything(), #$errstr,
+                 $this->anything(), #$this->sendTimeoutSec_ + ($this->sendTimeoutUsec_ / 1000000),
+                 STREAM_CLIENT_CONNECT,
+                 $this->anything() #$context
+             )
+             ->willReturn(false);
 
         $socket = new TSSLSocket(
             $host,
@@ -62,6 +78,7 @@ class TSSLSocketTest extends TestCase
             'port' => 9090,
             'context' => null,
             'debugHandler' => null,
+            'streamSocketClientCallCount' => 0,
             'expectedException' => TTransportException::class,
             'expectedMessage' => 'Cannot open null host',
             'expectedCode' => TTransportException::NOT_OPEN,
@@ -71,6 +88,7 @@ class TSSLSocketTest extends TestCase
             'port' => 0,
             'context' => null,
             'debugHandler' => null,
+            'streamSocketClientCallCount' => 0,
             'expectedException' => TTransportException::class,
             'expectedMessage' => 'Cannot open without port',
             'expectedCode' => TTransportException::NOT_OPEN,
@@ -80,6 +98,7 @@ class TSSLSocketTest extends TestCase
             'port' => 9090,
             'context' => null,
             'debugHandler' => null,
+            'streamSocketClientCallCount' => 1,
             'expectedException' => TException::class,
             'expectedMessage' => 'TSocket: Could not connect to',
             'expectedCode' => TTransportException::UNKNOWN,
@@ -98,6 +117,18 @@ class TSSLSocketTest extends TestCase
             $context,
             $debugHandler
         );
+
+        $this->getFunctionMock('Thrift\Transport', 'stream_socket_client')
+             ->expects($this->once())
+             ->with(
+                 'ssl://' . $host . ':' . $port,
+                 $this->anything(), #$errno,
+                 $this->anything(), #$errstr,
+                 $this->anything(), #$this->sendTimeoutSec_ + ($this->sendTimeoutUsec_ / 1000000),
+                 STREAM_CLIENT_CONNECT,
+                 $this->anything() #$context
+             )
+             ->willReturn(fopen('php://memory', 'r+'));
 
         $transport->open();
         $this->expectException(TTransportException::class);
@@ -126,6 +157,25 @@ class TSSLSocketTest extends TestCase
         );
         $transport->setDebug(true);
 
+        $this->getFunctionMock('Thrift\Transport', 'stream_socket_client')
+             ->expects($this->once())
+             ->with(
+                 'ssl://' . $host . ':' . $port,
+                 $this->anything(), #$errno,
+                 $this->anything(), #$errstr,
+                 $this->anything(), #$this->sendTimeoutSec_ + ($this->sendTimeoutUsec_ / 1000000),
+                 STREAM_CLIENT_CONNECT,
+                 $this->anything() #$context
+             )
+             ->willReturnCallback(
+                 function ($host, &$error_code, &$error_message, $timeout, $flags, $context) {
+                     $error_code = 999;
+                     $error_message = 'Connection refused';
+
+                     return false;
+                 }
+             );
+
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('TSocket: Could not connect to');
         $this->expectExceptionCode(0);
@@ -153,6 +203,18 @@ class TSSLSocketTest extends TestCase
             $debugHandler
         );
 
+        $this->getFunctionMock('Thrift\Transport', 'stream_socket_client')
+             ->expects($this->once())
+             ->with(
+                 'ssl://' . $host . ':' . $port,
+                 $this->anything(), #$errno,
+                 $this->anything(), #$errstr,
+                 $this->anything(), #$this->sendTimeoutSec_ + ($this->sendTimeoutUsec_ / 1000000),
+                 STREAM_CLIENT_CONNECT,
+                 $context #$context
+             )
+             ->willReturn(fopen('php://memory', 'r+'));
+
         $transport->open();
         $this->assertTrue($transport->isOpen());
     }
@@ -179,29 +241,5 @@ class TSSLSocketTest extends TestCase
         yield 'localhost' => ['localhost', 'ssl://localhost'];
         yield 'ssl_localhost' => ['ssl://localhost', 'ssl://localhost'];
         yield 'http_localhost' => ['http://localhost', 'http://localhost'];
-    }
-}
-
-//redeclare core functions for testing
-
-namespace Thrift\Transport;
-
-{
-    function stream_socket_client(
-        string $address,
-        &$error_code,
-        &$error_message,
-        ?float $timeout,
-        int $flags = STREAM_CLIENT_CONNECT,
-        $context = null
-    ) {
-        if ($address === 'ssl://nonexistent-host:9090') {
-            $error_code = 999;
-            $error_message = 'Connection refused';
-
-            return false;
-        }
-
-        return fopen('php://memory', 'r+');
     }
 }

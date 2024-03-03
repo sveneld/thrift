@@ -298,6 +298,7 @@ class TCurlClient extends TTransport
                 self::$curlHandle = null;
             }
         } catch (\Exception $x) {
+            #it's not possible to throw an exception by calling a function that has no effect
             error_log('There was an error closing the curl handle: ' . $x->getMessage());
         }
     }
