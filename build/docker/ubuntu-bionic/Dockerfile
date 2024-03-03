@@ -218,6 +218,7 @@ RUN apt-get install -y --no-install-recommends \
       php-pear \
       php-mbstring \
       php-xml \
+      php-curl \
       re2c \
       composer
 
