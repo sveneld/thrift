@@ -58,31 +58,31 @@ class TSSLSocketTest extends TestCase
     public function openExceptionDataProvider()
     {
         yield 'host is empty' => [
-            '',
-            9090,
-            null,
-            null,
-            TTransportException::class,
-            'Cannot open null host',
-            TTransportException::NOT_OPEN,
+            'host' => '',
+            'port' => 9090,
+            'context' => null,
+            'debugHandler' => null,
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'Cannot open null host',
+            'expectedCode' => TTransportException::NOT_OPEN,
         ];
         yield 'port is not positive' => [
-            'localhost',
-            0,
-            null,
-            null,
-            TTransportException::class,
-            'Cannot open without port',
-            TTransportException::NOT_OPEN,
+            'host' => 'localhost',
+            'port' => 0,
+            'context' => null,
+            'debugHandler' => null,
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'Cannot open without port',
+            'expectedCode' => TTransportException::NOT_OPEN,
         ];
         yield 'connection failure' => [
-            'nonexistent-host',
-            9090,
-            null,
-            null,
-            TException::class,
-            'TSocket: Could not connect to',
-            TTransportException::UNKNOWN,
+            'host' => 'nonexistent-host',
+            'port' => 9090,
+            'context' => null,
+            'debugHandler' => null,
+            'expectedException' => TException::class,
+            'expectedMessage' => 'TSocket: Could not connect to',
+            'expectedCode' => TTransportException::UNKNOWN,
         ];
     }
 

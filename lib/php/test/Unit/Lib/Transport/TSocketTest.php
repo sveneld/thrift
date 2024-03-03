@@ -59,31 +59,31 @@ class TSocketTest extends TestCase
     public function openExceptionDataProvider()
     {
         yield 'host is empty' => [
-            '',
-            9090,
-            null,
-            false,
-            TTransportException::class,
-            'Cannot open null host',
-            TTransportException::NOT_OPEN,
+            'host' => '',
+            'port' => 9090,
+            'persist' => null,
+            'debugHandler' => false,
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'Cannot open null host',
+            'expectedCode' => TTransportException::NOT_OPEN,
         ];
         yield 'port is not positive' => [
-            'localhost',
-            0,
-            false,
-            null,
-            TTransportException::class,
-            'Cannot open without port',
-            TTransportException::NOT_OPEN,
+            'host' => 'localhost',
+            'port' => 0,
+            'persist' => false,
+            'debugHandler' => null,
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'Cannot open without port',
+            'expectedCode' => TTransportException::NOT_OPEN,
         ];
         yield 'connection failure' => [
-            'nonexistent-host',
-            9090,
-            false,
-            null,
-            TException::class,
-            'TSocket: Could not connect to',
-            TTransportException::UNKNOWN,
+            'host' => 'nonexistent-host',
+            'port' => 9090,
+            'persist' => false,
+            'debugHandler' => null,
+            'expectedException' => TException::class,
+            'expectedMessage' => 'TSocket: Could not connect to',
+            'expectedCode' => TTransportException::UNKNOWN,
         ];
     }
 
@@ -338,22 +338,22 @@ class TSocketTest extends TestCase
     public function writeFailDataProvider()
     {
         yield 'stream_select timeout' => [
-            'timeout',
-            TTransportException::class,
-            'TSocket: timed out writing 23 bytes from localhost:9090',
-            0,
+            'streamName' => 'timeout',
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket: timed out writing 23 bytes from localhost:9090',
+            'expectedCode' => 0,
         ];
         yield 'stream_select fail write' => [
-            'failWrite',
-            TTransportException::class,
-            'TSocket: Could not write 23 bytes localhost:9090',
-            0,
+            'streamName' => 'failWrite',
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket: Could not write 23 bytes localhost:9090',
+            'expectedCode' => 0,
         ];
         yield 'stream_select fail' => [
-            'fail',
-            TTransportException::class,
-            'TSocket: Could not write 23 bytes localhost:9090',
-            0,
+            'streamName' => 'fail',
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket: Could not write 23 bytes localhost:9090',
+            'expectedCode' => 0,
         ];
     }
 
@@ -416,22 +416,22 @@ class TSocketTest extends TestCase
     public function readFailDataProvider()
     {
         yield 'stream_select timeout' => [
-            'timeout',
-            TTransportException::class,
-            'TSocket: timed out reading 5 bytes from localhost:9090',
-            0,
+            'streamName' => 'timeout',
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket: timed out reading 5 bytes from localhost:9090',
+            'expectedCode' => 0,
         ];
         yield 'stream_select fail read' => [
-            'failRead',
-            TTransportException::class,
-            'TSocket read 0 bytes',
-            0,
+            'streamName' => 'failRead',
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket read 0 bytes',
+            'expectedCode' => 0,
         ];
         yield 'stream_select fail' => [
-            'fail',
-            TTransportException::class,
-            'TSocket: Could not read 5 bytes from localhost:9090',
-            0,
+            'streamName' => 'fail',
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket: Could not read 5 bytes from localhost:9090',
+            'expectedCode' => 0,
         ];
     }
 }

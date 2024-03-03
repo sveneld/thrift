@@ -73,28 +73,28 @@ class TMemoryBufferTest extends TestCase
     public function readDataProvider()
     {
         yield 'Read part of buffer' => [
-            '1234567890',
-            5,
-            '12345',
-            '67890',
+            'startBuffer' => '1234567890',
+            'readLength' => 5,
+            'expectedRead' => '12345',
+            'expectedBuffer' => '67890',
         ];
         yield 'Read part of buffer UTF' => [
-            'Slovenščina',
-            6,
-            'Sloven',
-            'ščina',
+            'startBuffer' => 'Slovenščina',
+            'readLength' => 6,
+            'expectedRead' => 'Sloven',
+            'expectedBuffer' => 'ščina',
         ];
         yield 'Read part of buffer UTF 2' => [
-            'Українська',
-            6,
-            'Укр',
-            'аїнська',
+            'startBuffer' => 'Українська',
+            'readLength' => 6,
+            'expectedRead' => 'Укр',
+            'expectedBuffer' => 'аїнська',
         ];
         yield 'Read full' => [
-            '123456789',
-            10,
-            '123456789',
-            '',
+            'startBuffer' => '123456789',
+            'readLength' => 10,
+            'expectedRead' => '123456789',
+            'expectedBuffer' => '',
         ];
     }
 
@@ -114,19 +114,19 @@ class TMemoryBufferTest extends TestCase
     public function writeDataProvider()
     {
         yield 'empty start buffer' => [
-            '',
-            '12345',
-            '12345',
+            'startBuffer' => '',
+            'writeData' => '12345',
+            'expectedBuffer' => '12345',
         ];
         yield 'not empty start buffer' => [
-            '67890',
-            '12345',
-            '6789012345',
+            'startBuffer' => '67890',
+            'writeData' => '12345',
+            'expectedBuffer' => '6789012345',
         ];
         yield 'not empty start buffer UTF' => [
-            'Slovenščina',
-            'Українська',
-            'SlovenščinaУкраїнська',
+            'startBuffer' => 'Slovenščina',
+            'writeData' => 'Українська',
+            'expectedBuffer' => 'SlovenščinaУкраїнська',
         ];
     }
 
