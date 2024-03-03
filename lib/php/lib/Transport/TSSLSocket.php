@@ -58,11 +58,10 @@ class TSSLSocket extends TSocket
         $this->host_ = $this->getSSLHost($host);
         $this->port_ = $port;
         // Initialize a stream context if not provided
-        if ($this->context_ === null) {
-            $this->context_ = stream_context_create();
-        } else {
-            $this->context_ = $context;
+        if ($context === null) {
+            $context = stream_context_create();
         }
+        $this->context_ = $context;
         $this->debugHandler_ = $debugHandler ? $debugHandler : 'error_log';
     }
 
