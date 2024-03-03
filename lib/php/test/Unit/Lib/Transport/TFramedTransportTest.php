@@ -23,7 +23,6 @@
 
 namespace Test\Thrift\Unit\Lib\Transport;
 
-namespace Unit\Lib\Transport;
 
 use PHPUnit\Framework\TestCase;
 use Thrift\Transport\TFramedTransport;
