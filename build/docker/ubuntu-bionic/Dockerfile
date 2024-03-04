@@ -122,12 +122,12 @@ RUN apt-get install -y --no-install-recommends \
       dart=$DART_VERSION
 ENV PATH /usr/lib/dart/bin:$PATH
 
-RUN apt-get install -y --no-install-recommends \
-      `# dotnet core dependencies` \
-      dotnet-sdk-8.0 \
-      dotnet-runtime-8.0 \
-      aspnetcore-runtime-8.0 \
-      dotnet-apphost-pack-8.0
+#RUN apt-get install -y --no-install-recommends \
+#      `# dotnet core dependencies` \
+#      dotnet-sdk-8.0 \
+#      dotnet-runtime-8.0 \
+#      aspnetcore-runtime-8.0 \
+#      dotnet-apphost-pack-8.0
 
 # Erlang dependencies
 ARG ERLANG_OTP_VERSION=23.3.4.11
@@ -219,11 +219,9 @@ RUN apt-get install -y --no-install-recommends \
       php-mbstring \
       php-xml \
       php-curl \
+      php-xdebug \
       re2c \
       composer
-
-RUN pecl install xdebug-3.1.1 && \
-      echo "zend_extension=xdebug.so" > /etc/php/7.2/cli/conf.d/20-xdebug.ini
 
 RUN apt-get install -y --no-install-recommends \
       `# Python dependencies` \

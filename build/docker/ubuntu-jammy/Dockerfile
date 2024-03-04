@@ -213,19 +213,17 @@ RUN apt-get install -y --no-install-recommends \
 
 RUN apt-get install -y --no-install-recommends \
   `# Php dependencies` \
-  php \
-  php-cli \
-  php-dev \
-  php-json \
-  php-pear \
-  php-mbstring \
-  php-xml \
-  php-curl \
-  re2c \
-  composer
-
-RUN pecl install xdebug-3.1.1 && \
-      echo "zend_extension=xdebug.so" > /etc/php/8.1/cli/conf.d/20-xdebug.ini
+      php \
+      php-cli \
+      php-dev \
+      php-json \
+      php-pear \
+      php-mbstring \
+      php-xml \
+      php-curl \
+      php-xdebug \
+      re2c \
+      composer
 
 RUN apt-get install -y --no-install-recommends \
   `# Python3 dependencies` \
