@@ -25,7 +25,6 @@ namespace Test\Thrift\Unit\Lib\Transport;
 
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
-use Test\Thrift\Unit\Lib\Transport\Fixtures\TestStream;
 use Thrift\Exception\TException;
 use Thrift\Exception\TTransportException;
 use Thrift\Transport\TSocket;
