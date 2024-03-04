@@ -26,9 +26,6 @@ use Thrift\ClassLoader\ThriftClassLoader;
 /***
  * This test suite depends on running the compiler against the ./Resources/ThriftTest.thrift file:
  * lib/php/test$ ../../../compiler/cpp/thrift --gen php:validate -r  --out ./Resources/packages/phpv ./Resources/ThriftTest.thrift
- *
- * @runInSeparateProcess
- * @preserveGlobalState false
  */
 class ValidatorTest extends BaseValidatorTest
 {

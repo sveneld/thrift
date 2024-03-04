@@ -31,9 +31,6 @@ use Thrift\Transport\TMemoryBuffer;
 /***
  * This test suite depends on running the compiler against the ./Resources/ThriftTest.thrift file:
  * lib/php/test$ ../../../compiler/cpp/thrift --gen php -r  --out ./Resources/packages/php ./Resources/ThriftTest.thrift
- *
- * @runInSeparateProcess
- * @preserveGlobalState false
  */
 class TJSONProtocolTest extends TestCase
 {

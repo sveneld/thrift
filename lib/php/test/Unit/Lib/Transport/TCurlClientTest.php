@@ -28,6 +28,9 @@ use PHPUnit\Framework\TestCase;
 use Thrift\Exception\TTransportException;
 use Thrift\Transport\TCurlClient;
 
+/**
+ * @preserveGlobalState disabled
+ */
 class TCurlClientTest extends TestCase
 {
     use PHPMock;
