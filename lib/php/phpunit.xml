@@ -26,7 +26,6 @@
          convertWarningsToExceptions="true"
          stopOnWarning="true"
          stopOnFailure="true"
-         processIsolation="true"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">

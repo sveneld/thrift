@@ -28,6 +28,9 @@ use Thrift\ClassLoader\ThriftClassLoader;
 /***
  * This test suite depends on running the compiler against the ./Resources/ThriftTest.thrift file:
  * lib/php/test$ ../../../compiler/cpp/thrift --gen php:json -r  --out ./Resources/packages/phpjs ./Resources/ThriftTest.thrift
+ *
+ * @runInSeparateProcess
+ * @preserveGlobalState false
  */
 class JsonSerializeTest extends TestCase
 {
