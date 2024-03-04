@@ -213,17 +213,17 @@ RUN apt-get install -y --no-install-recommends \
 
 RUN apt-get install -y --no-install-recommends \
   `# Php dependencies` \
-      php \
-      php-cli \
-      php-dev \
-      php-json \
-      php-pear \
-      php-mbstring \
-      php-xml \
-      php-curl \
-      php-xdebug \
-      re2c \
-      composer
+  php \
+  php-cli \
+  php-dev \
+  php-json \
+  php-pear \
+  php-mbstring \
+  php-xml \
+  php-curl \
+  php-xdebug \
+  re2c \
+  composer
 
 RUN apt-get install -y --no-install-recommends \
   `# Python3 dependencies` \
