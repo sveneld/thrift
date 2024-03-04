@@ -28,9 +28,6 @@ use PHPUnit\Framework\TestCase;
 use Thrift\Exception\TTransportException;
 use Thrift\Transport\TCurlClient;
 
-/**
- * @preserveGlobalState disabled
- */
 class TCurlClientTest extends TestCase
 {
     use PHPMock;
@@ -184,7 +181,6 @@ class TCurlClientTest extends TestCase
         $timeout,
         $connectionTimeout,
         $curlSetOptCalls,
-        $curlCallbackFunction,
         $response,
         $responseError,
         $responseCode,
@@ -226,17 +222,17 @@ class TCurlClientTest extends TestCase
 
         $this->getFunctionMock('\\Thrift\\Transport', 'curl_exec')
              ->expects($this->once())
-             ->with($curlCallbackFunction)
+             ->with($this->anything())
              ->willReturn($response);
 
         $this->getFunctionMock('\\Thrift\\Transport', 'curl_error')
              ->expects($this->once())
-             ->with($curlCallbackFunction)
+             ->with($this->anything())
              ->willReturn($responseError);
 
         $this->getFunctionMock('\\Thrift\\Transport', 'curl_getinfo')
              ->expects($this->once())
-             ->with($curlCallbackFunction, CURLINFO_HTTP_CODE)
+             ->with($this->anything(), CURLINFO_HTTP_CODE)
              ->willReturn($responseCode);
 
         if (!is_null($expectedException)) {
@@ -246,7 +242,7 @@ class TCurlClientTest extends TestCase
 
             $this->getFunctionMock('\\Thrift\\Transport', 'curl_close')
                  ->expects($this->once())
-                 ->with($curlCallbackFunction);
+                 ->with($this->anything());
         }
 
         $transport->flush();
@@ -254,12 +250,6 @@ class TCurlClientTest extends TestCase
 
     public function flushDataProvider()
     {
-        $curlCallbackFunction = $this->callback(function () {
-            #we support currently php 7 and php 8 which have different signature of curl_setopt
-            #in future
-            return true;
-        });
-
         $request = 'request';
 
         $default = [
@@ -272,13 +262,13 @@ class TCurlClientTest extends TestCase
             'timeout' => null,
             'connectionTimeout' => null,
             'curlSetOptCalls' => [
-                [$curlCallbackFunction, CURLOPT_RETURNTRANSFER, true],
-                [$curlCallbackFunction, CURLOPT_USERAGENT, 'PHP/TCurlClient'],
-                [$curlCallbackFunction, CURLOPT_CUSTOMREQUEST, 'POST'],
-                [$curlCallbackFunction, CURLOPT_FOLLOWLOCATION, true],
-                [$curlCallbackFunction, CURLOPT_MAXREDIRS, 1],
+                [$this->anything(), CURLOPT_RETURNTRANSFER, true],
+                [$this->anything(), CURLOPT_USERAGENT, 'PHP/TCurlClient'],
+                [$this->anything(), CURLOPT_CUSTOMREQUEST, 'POST'],
+                [$this->anything(), CURLOPT_FOLLOWLOCATION, true],
+                [$this->anything(), CURLOPT_MAXREDIRS, 1],
                 [
-                    $curlCallbackFunction,
+                    $this->anything(),
                     CURLOPT_HTTPHEADER,
                     [
                         'Accept: application/x-thrift',
@@ -286,10 +276,9 @@ class TCurlClientTest extends TestCase
                         'Content-Length: ' . strlen($request),
                     ],
                 ],
-                [$curlCallbackFunction, CURLOPT_POSTFIELDS, $request],
-                [$curlCallbackFunction, CURLOPT_URL, 'http://localhost'],
+                [$this->anything(), CURLOPT_POSTFIELDS, $request],
+                [$this->anything(), CURLOPT_URL, 'http://localhost'],
             ],
-            'curlCallbackFunction' => $curlCallbackFunction,
             'response' => 'response',
             'responseError' => '',
             'responseCode' => 200,
@@ -301,13 +290,13 @@ class TCurlClientTest extends TestCase
             [
                 'headers' => ['test' => '1234567890'],
                 'curlSetOptCalls' => [
-                    [$curlCallbackFunction, CURLOPT_RETURNTRANSFER, true],
-                    [$curlCallbackFunction, CURLOPT_USERAGENT, 'PHP/TCurlClient'],
-                    [$curlCallbackFunction, CURLOPT_CUSTOMREQUEST, 'POST'],
-                    [$curlCallbackFunction, CURLOPT_FOLLOWLOCATION, true],
-                    [$curlCallbackFunction, CURLOPT_MAXREDIRS, 1],
+                    [$this->anything(), CURLOPT_RETURNTRANSFER, true],
+                    [$this->anything(), CURLOPT_USERAGENT, 'PHP/TCurlClient'],
+                    [$this->anything(), CURLOPT_CUSTOMREQUEST, 'POST'],
+                    [$this->anything(), CURLOPT_FOLLOWLOCATION, true],
+                    [$this->anything(), CURLOPT_MAXREDIRS, 1],
                     [
-                        $curlCallbackFunction,
+                        $this->anything(),
                         CURLOPT_HTTPHEADER,
                         [
                             'Accept: application/x-thrift',
@@ -316,8 +305,8 @@ class TCurlClientTest extends TestCase
                             'test: 1234567890',
                         ],
                     ],
-                    [$curlCallbackFunction, CURLOPT_POSTFIELDS, $request],
-                    [$curlCallbackFunction, CURLOPT_URL, 'http://localhost'],
+                    [$this->anything(), CURLOPT_POSTFIELDS, $request],
+                    [$this->anything(), CURLOPT_URL, 'http://localhost'],
                 ],
             ]
         );
@@ -326,13 +315,13 @@ class TCurlClientTest extends TestCase
             [
                 'uri' => 'test1234567890',
                 'curlSetOptCalls' => [
-                    [$curlCallbackFunction, CURLOPT_RETURNTRANSFER, true],
-                    [$curlCallbackFunction, CURLOPT_USERAGENT, 'PHP/TCurlClient'],
-                    [$curlCallbackFunction, CURLOPT_CUSTOMREQUEST, 'POST'],
-                    [$curlCallbackFunction, CURLOPT_FOLLOWLOCATION, true],
-                    [$curlCallbackFunction, CURLOPT_MAXREDIRS, 1],
+                    [$this->anything(), CURLOPT_RETURNTRANSFER, true],
+                    [$this->anything(), CURLOPT_USERAGENT, 'PHP/TCurlClient'],
+                    [$this->anything(), CURLOPT_CUSTOMREQUEST, 'POST'],
+                    [$this->anything(), CURLOPT_FOLLOWLOCATION, true],
+                    [$this->anything(), CURLOPT_MAXREDIRS, 1],
                     [
-                        $curlCallbackFunction,
+                        $this->anything(),
                         CURLOPT_HTTPHEADER,
                         [
                             'Accept: application/x-thrift',
@@ -340,8 +329,8 @@ class TCurlClientTest extends TestCase
                             'Content-Length: ' . strlen($request),
                         ],
                     ],
-                    [$curlCallbackFunction, CURLOPT_POSTFIELDS, $request],
-                    [$curlCallbackFunction, CURLOPT_URL, 'http://localhost/test1234567890'],
+                    [$this->anything(), CURLOPT_POSTFIELDS, $request],
+                    [$this->anything(), CURLOPT_URL, 'http://localhost/test1234567890'],
                 ],
             ]
         );
@@ -351,13 +340,13 @@ class TCurlClientTest extends TestCase
                 'timeout' => 10,
                 'connectionTimeout' => 10,
                 'curlSetOptCalls' => [
-                    [$curlCallbackFunction, CURLOPT_RETURNTRANSFER, true],
-                    [$curlCallbackFunction, CURLOPT_USERAGENT, 'PHP/TCurlClient'],
-                    [$curlCallbackFunction, CURLOPT_CUSTOMREQUEST, 'POST'],
-                    [$curlCallbackFunction, CURLOPT_FOLLOWLOCATION, true],
-                    [$curlCallbackFunction, CURLOPT_MAXREDIRS, 1],
+                    [$this->anything(), CURLOPT_RETURNTRANSFER, true],
+                    [$this->anything(), CURLOPT_USERAGENT, 'PHP/TCurlClient'],
+                    [$this->anything(), CURLOPT_CUSTOMREQUEST, 'POST'],
+                    [$this->anything(), CURLOPT_FOLLOWLOCATION, true],
+                    [$this->anything(), CURLOPT_MAXREDIRS, 1],
                     [
-                        $curlCallbackFunction,
+                        $this->anything(),
                         CURLOPT_HTTPHEADER,
                         [
                             'Accept: application/x-thrift',
@@ -365,10 +354,10 @@ class TCurlClientTest extends TestCase
                             'Content-Length: ' . strlen($request),
                         ],
                     ],
-                    [$curlCallbackFunction, CURLOPT_TIMEOUT, 10],
-                    [$curlCallbackFunction, CURLOPT_CONNECTTIMEOUT, 10],
-                    [$curlCallbackFunction, CURLOPT_POSTFIELDS, $request],
-                    [$curlCallbackFunction, CURLOPT_URL, 'http://localhost'],
+                    [$this->anything(), CURLOPT_TIMEOUT, 10],
+                    [$this->anything(), CURLOPT_CONNECTTIMEOUT, 10],
+                    [$this->anything(), CURLOPT_POSTFIELDS, $request],
+                    [$this->anything(), CURLOPT_URL, 'http://localhost'],
                 ],
             ]
         );
@@ -378,13 +367,13 @@ class TCurlClientTest extends TestCase
                 'timeout' => 0.1,
                 'connectionTimeout' => 0.1,
                 'curlSetOptCalls' => [
-                    [$curlCallbackFunction, CURLOPT_RETURNTRANSFER, true],
-                    [$curlCallbackFunction, CURLOPT_USERAGENT, 'PHP/TCurlClient'],
-                    [$curlCallbackFunction, CURLOPT_CUSTOMREQUEST, 'POST'],
-                    [$curlCallbackFunction, CURLOPT_FOLLOWLOCATION, true],
-                    [$curlCallbackFunction, CURLOPT_MAXREDIRS, 1],
+                    [$this->anything(), CURLOPT_RETURNTRANSFER, true],
+                    [$this->anything(), CURLOPT_USERAGENT, 'PHP/TCurlClient'],
+                    [$this->anything(), CURLOPT_CUSTOMREQUEST, 'POST'],
+                    [$this->anything(), CURLOPT_FOLLOWLOCATION, true],
+                    [$this->anything(), CURLOPT_MAXREDIRS, 1],
                     [
-                        $curlCallbackFunction,
+                        $this->anything(),
                         CURLOPT_HTTPHEADER,
                         [
                             'Accept: application/x-thrift',
@@ -392,10 +381,10 @@ class TCurlClientTest extends TestCase
                             'Content-Length: ' . strlen($request),
                         ],
                     ],
-                    [$curlCallbackFunction, CURLOPT_TIMEOUT_MS, 100],
-                    [$curlCallbackFunction, CURLOPT_CONNECTTIMEOUT_MS, 100],
-                    [$curlCallbackFunction, CURLOPT_POSTFIELDS, $request],
-                    [$curlCallbackFunction, CURLOPT_URL, 'http://localhost'],
+                    [$this->anything(), CURLOPT_TIMEOUT_MS, 100],
+                    [$this->anything(), CURLOPT_CONNECTTIMEOUT_MS, 100],
+                    [$this->anything(), CURLOPT_POSTFIELDS, $request],
+                    [$this->anything(), CURLOPT_URL, 'http://localhost'],
                 ],
             ]
         );
