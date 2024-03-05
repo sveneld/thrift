@@ -70,7 +70,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_R,
             'sapiName' => 'cli',
             'fopenParams' => [['php://stdin', 'r']],
-            'fopenResult' => [fopen('php://stdin', 'r')],
+            'fopenResult' => [fopen('php://temp', 'r')],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -79,7 +79,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_R,
             'sapiName' => 'apache',
             'fopenParams' => [['php://input', 'r']],
-            'fopenResult' => [fopen('php://input', 'r')],
+            'fopenResult' => [fopen('php://temp', 'r')],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -88,7 +88,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_W,
             'sapiName' => '',
             'fopenParams' => [['php://output', 'w']],
-            'fopenResult' => [fopen('php://output', 'w')],
+            'fopenResult' => [fopen('php://temp', 'w')],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -97,7 +97,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_R | TPhpStream::MODE_W,
             'sapiName' => 'cli',
             'fopenParams' => [['php://stdin', 'r'], ['php://output', 'w']],
-            'fopenResult' => [fopen('php://input', 'r'), fopen('php://output', 'w')],
+            'fopenResult' => [fopen('php://temp', 'r'), fopen('php://temp', 'w')],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -152,8 +152,8 @@ class TPhpStreamTest extends TestCase
 
     public function closeDataProvider()
     {
-        $read = fopen('php://stdin', 'r');
-        $write = fopen('php://output', 'w');
+        $read = fopen('php://temp', 'r');
+        $write = fopen('php://temp', 'w');
         yield 'read' => [
             'mode' => TPhpStream::MODE_R,
             'fopenParams' => [['php://stdin', 'r']],
