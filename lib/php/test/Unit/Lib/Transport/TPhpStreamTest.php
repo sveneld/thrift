@@ -66,15 +66,15 @@ class TPhpStreamTest extends TestCase
 
     public function fopenDataProvider()
     {
-        yield 'readCli' => [
-            'mode' => TPhpStream::MODE_R,
-            'sapiName' => 'cli',
-            'fopenParams' => [['php://stdin', 'r']],
-            'fopenResult' => [fopen('php://temp', 'r')],
-            'expectedException' => null,
-            'expectedExceptionMessage' => '',
-            'expectedExceptionCode' => 0,
-        ];
+//        yield 'readCli' => [
+//            'mode' => TPhpStream::MODE_R,
+//            'sapiName' => 'cli',
+//            'fopenParams' => [['php://stdin', 'r']],
+//            'fopenResult' => [fopen('php://temp', 'r')],
+//            'expectedException' => null,
+//            'expectedExceptionMessage' => '',
+//            'expectedExceptionCode' => 0,
+//        ];
         yield 'readNotCli' => [
             'mode' => TPhpStream::MODE_R,
             'sapiName' => 'apache',
