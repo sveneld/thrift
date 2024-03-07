@@ -188,20 +188,7 @@ class TCurlClientTest extends TestCase
         $expectedMessage = null,
         $expectedCode = null
     ) {
-        $host = 'localhost';
-        $transport = new TCurlClient($host, $port, $uri, $scheme);
-        if (!empty($headers)) {
-            $transport->addHeaders($headers);
-        }
-        $transport->write($request);
-        if (!empty($timeout)) {
-            $transport->setTimeoutSecs($timeout);
-        }
-        if (!empty($connectionTimeout)) {
-            $transport->setConnectionTimeoutSecs($connectionTimeout);
-        }
-
-        $this->getFunctionMock('\\Thrift\\Transport', 'register_shutdown_function')
+        $this->getFunctionMock('Thrift\\Transport', 'register_shutdown_function')
              ->expects($this->once())
              ->with(
                  $this->callback(
@@ -212,25 +199,25 @@ class TCurlClientTest extends TestCase
                      }
                  )
              );
-        $this->getFunctionMock('\\Thrift\\Transport', 'curl_init')
+        $this->getFunctionMock('Thrift\\Transport', 'curl_init')
              ->expects($this->once());
 
-        $this->getFunctionMock('\\Thrift\\Transport', 'curl_setopt')
+        $this->getFunctionMock('Thrift\\Transport', 'curl_setopt')
              ->expects($this->any())
              ->withConsecutive(...$curlSetOptCalls)
              ->willReturn(true);
 
-        $this->getFunctionMock('\\Thrift\\Transport', 'curl_exec')
+        $this->getFunctionMock('Thrift\\Transport', 'curl_exec')
              ->expects($this->once())
              ->with($this->anything())
              ->willReturn($response);
 
-        $this->getFunctionMock('\\Thrift\\Transport', 'curl_error')
+        $this->getFunctionMock('Thrift\\Transport', 'curl_error')
              ->expects($this->once())
              ->with($this->anything())
              ->willReturn($responseError);
 
-        $this->getFunctionMock('\\Thrift\\Transport', 'curl_getinfo')
+        $this->getFunctionMock('Thrift\\Transport', 'curl_getinfo')
              ->expects($this->once())
              ->with($this->anything(), CURLINFO_HTTP_CODE)
              ->willReturn($responseCode);
@@ -240,9 +227,21 @@ class TCurlClientTest extends TestCase
             $this->expectExceptionMessage($expectedMessage);
             $this->expectExceptionCode($expectedCode);
 
-            $this->getFunctionMock('\\Thrift\\Transport', 'curl_close')
+            $this->getFunctionMock('Thrift\\Transport', 'curl_close')
                  ->expects($this->once())
                  ->with($this->anything());
+        }
+
+        $transport = new TCurlClient($host, $port, $uri, $scheme);
+        if (!empty($headers)) {
+            $transport->addHeaders($headers);
+        }
+        $transport->write($request);
+        if (!empty($timeout)) {
+            $transport->setTimeoutSecs($timeout);
+        }
+        if (!empty($connectionTimeout)) {
+            $transport->setConnectionTimeoutSecs($connectionTimeout);
         }
 
         $transport->flush();
@@ -411,15 +410,15 @@ class TCurlClientTest extends TestCase
 
     public function testCloseCurlHandle()
     {
+        $this->getFunctionMock('Thrift\\Transport', 'curl_close')
+             ->expects($this->once())
+             ->with('testHandle');
+
         $transport = new TCurlClient('localhost');
         $ref = new \ReflectionClass($transport);
         $prop = $ref->getProperty('curlHandle');
         $prop->setAccessible(true);
         $prop->setValue($transport, 'testHandle');
-
-        $this->getFunctionMock('\\Thrift\\Transport', 'curl_close')
-             ->expects($this->once())
-             ->with('testHandle');
 
         $transport::closeCurlHandle();
     }

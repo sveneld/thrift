@@ -110,13 +110,6 @@ class TSocketTest extends TestCase
         $port = 9090;
         $persist = false;
         $debugHandler = null;
-        $transport = new TSocket(
-            $host,
-            $port,
-            $persist,
-            $debugHandler
-        );
-
         $handle = fopen('php://memory', 'r+');
         $this->getFunctionMock('Thrift\Transport', 'fsockopen')
              ->expects($this->once())
@@ -143,6 +136,13 @@ class TSocketTest extends TestCase
                  1 #$value
              )
              ->willReturn(true);
+
+        $transport = new TSocket(
+            $host,
+            $port,
+            $persist,
+            $debugHandler
+        );
 
         $transport->open();
         $this->expectException(TTransportException::class);
@@ -222,13 +222,6 @@ class TSocketTest extends TestCase
              )
              ->willReturn($handle);
 
-        $transport = new TSocket(
-            $host,
-            $port,
-            $persist,
-            $debugHandler
-        );
-
         $this->getFunctionMock('Thrift\Transport', 'socket_import_stream')
              ->expects($this->once())
              ->with($handle)
@@ -243,6 +236,13 @@ class TSocketTest extends TestCase
                  1 #$value
              )
              ->willReturn(true);
+
+        $transport = new TSocket(
+            $host,
+            $port,
+            $persist,
+            $debugHandler
+        );
 
         $transport->open();
         $this->assertTrue($transport->isOpen());
@@ -447,15 +447,7 @@ class TSocketTest extends TestCase
         $port = 9090;
         $persist = false;
         $debugHandler = null;
-        $transport = new TSocket(
-            $host,
-            $port,
-            $persist,
-            $debugHandler
-        );
-
         $handle = fopen('php://memory', 'r+');
-        $transport->setHandle($handle);
 
         $this->getFunctionMock('Thrift\Transport', 'stream_select')
              ->expects($this->once())
@@ -479,6 +471,14 @@ class TSocketTest extends TestCase
         $this->expectException($expectedException);
         $this->expectExceptionMessage($expectedMessage);
         $this->expectExceptionCode($expectedCode);
+
+        $transport = new TSocket(
+            $host,
+            $port,
+            $persist,
+            $debugHandler
+        );
+        $transport->setHandle($handle);
 
         $transport->write('test1234456789132456798');
     }
@@ -568,15 +568,7 @@ class TSocketTest extends TestCase
         $port = 9090;
         $persist = false;
         $debugHandler = null;
-        $transport = new TSocket(
-            $host,
-            $port,
-            $persist,
-            $debugHandler
-        );
-
         $handle = fopen('php://memory', 'r+');
-        $transport->setHandle($handle);
 
         $this->getFunctionMock('Thrift\Transport', 'stream_select')
              ->expects($this->once())
@@ -592,6 +584,14 @@ class TSocketTest extends TestCase
         $this->expectException($expectedException);
         $this->expectExceptionMessage($expectedMessage);
         $this->expectExceptionCode($expectedCode);
+
+        $transport = new TSocket(
+            $host,
+            $port,
+            $persist,
+            $debugHandler
+        );
+        $transport->setHandle($handle);
 
         $transport->read(5);
     }

@@ -44,9 +44,10 @@ class TPhpStreamTest extends TestCase
         $expectedExceptionMessage,
         $expectedExceptionCode
     ) {
-        $this->markTestSkipped(
-            'Due to the bug Zend OPcache can\'t be temporary enabled (it may be only disabled till the end of request)'
-        );
+        #due to the running tests in separate process we could not open stream in data provider, so we need to do it here
+        foreach ($fopenResult as $num => $result) {
+            $fopenResult[$num] = $result ? fopen(...$result) : $result;
+        }
 
         $this->getFunctionMock('Thrift\Transport', 'php_sapi_name')
              ->expects(!empty($sapiName) ? $this->once() : $this->never())
@@ -73,7 +74,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_R,
             'sapiName' => 'cli',
             'fopenParams' => [['php://stdin', 'r']],
-            'fopenResult' => [fopen('php://temp', 'r')],
+            'fopenResult' => [['php://temp', 'r']],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -82,7 +83,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_R,
             'sapiName' => 'apache',
             'fopenParams' => [['php://input', 'r']],
-            'fopenResult' => [fopen('php://temp', 'r')],
+            'fopenResult' => [['php://temp', 'r']],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -91,7 +92,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_W,
             'sapiName' => '',
             'fopenParams' => [['php://output', 'w']],
-            'fopenResult' => [fopen('php://temp', 'w')],
+            'fopenResult' => [['php://temp', 'w']],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -100,7 +101,7 @@ class TPhpStreamTest extends TestCase
             'mode' => TPhpStream::MODE_R | TPhpStream::MODE_W,
             'sapiName' => 'cli',
             'fopenParams' => [['php://stdin', 'r'], ['php://output', 'w']],
-            'fopenResult' => [fopen('php://temp', 'r'), fopen('php://temp', 'w')],
+            'fopenResult' => [['php://temp', 'r'], ['php://temp', 'w']],
             'expectedException' => null,
             'expectedExceptionMessage' => '',
             'expectedExceptionCode' => 0,
@@ -132,26 +133,30 @@ class TPhpStreamTest extends TestCase
     public function testClose(
         $mode,
         $fopenParams,
-        $fopenResult,
-        $fcloseParams
+        $fopenResult
     ) {
-        $this->markTestSkipped(
-            'Due to the bug Zend OPcache can\'t be temporary enabled (it may be only disabled till the end of request)'
-        );
-
-        $transport = new TPhpStream($mode);
+        #due to the running tests in separate process we could not open stream in data provider, so we need to do it here
+        foreach ($fopenResult as $num => $result) {
+            $fopenResult[$num] = $result ? fopen(...$result) : $result;
+        }
 
         $this->getFunctionMock('Thrift\Transport', 'fopen')
              ->expects($this->exactly(count($fopenParams)))
              ->withConsecutive(...$fopenParams)
              ->willReturnOnConsecutiveCalls(...$fopenResult);
 
+        $this->getFunctionMock('Thrift\Transport', 'fclose')
+             ->expects($this->exactly(count($fopenParams)))
+             ->with(
+                 $this->callback(function ($stream) {
+                     return is_resource($stream);
+                 })
+             )
+             ->willReturn(true);
+
+        $transport = new TPhpStream($mode);
         $transport->open();
         $this->assertTrue($transport->isOpen());
-
-        $this->getFunctionMock('Thrift\Transport', 'fclose')
-             ->expects($this->exactly(count($fcloseParams)))
-             ->withConsecutive(...$fcloseParams);
 
         $transport->close();
         $this->assertFalse($transport->isOpen());
@@ -159,25 +164,22 @@ class TPhpStreamTest extends TestCase
 
     public function closeDataProvider()
     {
-        $read = fopen('php://temp', 'r');
-        $write = fopen('php://temp', 'w');
+        $read = ['php://temp', 'r'];
+        $write = ['php://temp', 'w'];
         yield 'read' => [
             'mode' => TPhpStream::MODE_R,
             'fopenParams' => [['php://stdin', 'r']],
             'fopenResult' => [$read],
-            'fcloseParams' => [[$read]],
         ];
         yield 'write' => [
             'mode' => TPhpStream::MODE_W,
             'fopenParams' => [['php://output', 'w']],
             'fopenResult' => [$write],
-            'fcloseParams' => [[$write]],
         ];
         yield 'read and write' => [
             'mode' => TPhpStream::MODE_R | TPhpStream::MODE_W,
             'fopenParams' => [['php://stdin', 'r'], ['php://output', 'w']],
             'fopenResult' => [$read, $write],
-            'fcloseParams' => [[$read], [$write]],
         ];
     }
 
@@ -191,8 +193,6 @@ class TPhpStreamTest extends TestCase
         $expectedExceptionMessage,
         $expectedExceptionCode
     ) {
-        $transport = new TPhpStream(TPhpStream::MODE_R);
-
         $this->getFunctionMock('Thrift\Transport', 'fread')
              ->expects($this->once())
              ->with($this->anything(), 5)
@@ -204,6 +204,7 @@ class TPhpStreamTest extends TestCase
             $this->expectExceptionCode($expectedExceptionCode);
         }
 
+        $transport = new TPhpStream(TPhpStream::MODE_R);
         $this->assertEquals($expectedResult, $transport->read(5));
     }
 
@@ -243,8 +244,6 @@ class TPhpStreamTest extends TestCase
         $expectedExceptionMessage,
         $expectedExceptionCode
     ) {
-        $transport = new TPhpStream(TPhpStream::MODE_W);
-
         $this->getFunctionMock('Thrift\Transport', 'fwrite')
              ->expects($this->exactly(count($fwriteParams)))
              ->withConsecutive(...$fwriteParams)
@@ -256,6 +255,7 @@ class TPhpStreamTest extends TestCase
             $this->expectExceptionCode($expectedExceptionCode);
         }
 
+        $transport = new TPhpStream(TPhpStream::MODE_W);
         $transport->write($buf);
     }
 
@@ -289,9 +289,10 @@ class TPhpStreamTest extends TestCase
 
     public function testFlush()
     {
-        $transport = new TPhpStream(TPhpStream::MODE_R);
         $this->getFunctionMock('Thrift\Transport', 'fflush')
              ->expects($this->once());
+
+        $transport = new TPhpStream(TPhpStream::MODE_R);
         $transport->flush();
     }
 }

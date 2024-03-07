@@ -60,19 +60,19 @@ class THttpClientTest extends TestCase
 
     public function testClose()
     {
-        $host = 'localhost';
-        $transport = new THttpClient($host);
-
         $handle = fopen('php://temp', 'r+');
-        $ref = new \ReflectionClass($transport);
-        $propRequest = $ref->getProperty('handle_');
-        $propRequest->setAccessible(true);
-        $propRequest->setValue($transport, $handle);
-
         $this->getFunctionMock('Thrift\\Transport', 'fclose')
              ->expects($this->once())
              ->with($handle)
              ->willReturn(true);
+
+        $host = 'localhost';
+        $transport = new THttpClient($host);
+
+        $ref = new \ReflectionClass($transport);
+        $propRequest = $ref->getProperty('handle_');
+        $propRequest->setAccessible(true);
+        $propRequest->setValue($transport, $handle);
 
         $this->assertNull($transport->close());
         $this->assertNull($propRequest->getValue($transport));
@@ -90,15 +90,7 @@ class THttpClientTest extends TestCase
         $expectedExceptionMessage,
         $expectedExceptionCode
     ) {
-        $host = 'localhost';
-        $transport = new THttpClient($host);
-
         $handle = fopen('php://temp', 'r+');
-        $ref = new \ReflectionClass($transport);
-        $propRequest = $ref->getProperty('handle_');
-        $propRequest->setAccessible(true);
-        $propRequest->setValue($transport, $handle);
-
         $this->getFunctionMock('Thrift\\Transport', 'fread')
              ->expects($this->once())
              ->with($handle, $readLen)
@@ -114,6 +106,14 @@ class THttpClientTest extends TestCase
             $this->expectExceptionMessage($expectedExceptionMessage);
             $this->expectExceptionCode($expectedExceptionCode);
         }
+
+        $host = 'localhost';
+        $transport = new THttpClient($host);
+
+        $ref = new \ReflectionClass($transport);
+        $propRequest = $ref->getProperty('handle_');
+        $propRequest->setAccessible(true);
+        $propRequest->setValue($transport, $handle);
 
         $this->assertEquals($expectedResult, $transport->read($readLen));
     }
@@ -187,14 +187,6 @@ class THttpClientTest extends TestCase
         $expectedExceptionMessage,
         $expectedExceptionCode
     ) {
-        $transport = new THttpClient($host, $port, $uri, $scheme, $context);
-        if (!empty($headers)) {
-            $transport->addHeaders($headers);
-        }
-        if (!empty($timeout)) {
-            $transport->setTimeoutSecs($timeout);
-        }
-
         $this->getFunctionMock('Thrift\\Transport', 'stream_context_create')
              ->expects($this->once())
              ->with($streamContextOptions)
@@ -213,6 +205,14 @@ class THttpClientTest extends TestCase
             $this->expectException($expectedException);
             $this->expectExceptionMessage($expectedExceptionMessage);
             $this->expectExceptionCode($expectedExceptionCode);
+        }
+
+        $transport = new THttpClient($host, $port, $uri, $scheme, $context);
+        if (!empty($headers)) {
+            $transport->addHeaders($headers);
+        }
+        if (!empty($timeout)) {
+            $transport->setTimeoutSecs($timeout);
         }
 
         $this->assertNull($transport->flush());

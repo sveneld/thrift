@@ -111,12 +111,6 @@ class TSSLSocketTest extends TestCase
         $port = 9090;
         $context = null;
         $debugHandler = null;
-        $transport = new TSSLSocket(
-            $host,
-            $port,
-            $context,
-            $debugHandler
-        );
 
         $this->getFunctionMock('Thrift\Transport', 'stream_socket_client')
              ->expects($this->once())
@@ -129,6 +123,13 @@ class TSSLSocketTest extends TestCase
                  $this->anything() #$context
              )
              ->willReturn(fopen('php://memory', 'r+'));
+
+        $transport = new TSSLSocket(
+            $host,
+            $port,
+            $context,
+            $debugHandler
+        );
 
         $transport->open();
         $this->expectException(TTransportException::class);
@@ -149,13 +150,6 @@ class TSSLSocketTest extends TestCase
                 $error
             );
         };
-        $transport = new TSSLSocket(
-            $host,
-            $port,
-            $context,
-            $debugHandler
-        );
-        $transport->setDebug(true);
 
         $this->getFunctionMock('Thrift\Transport', 'stream_socket_client')
              ->expects($this->once())
@@ -179,6 +173,14 @@ class TSSLSocketTest extends TestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('TSocket: Could not connect to');
         $this->expectExceptionCode(0);
+
+        $transport = new TSSLSocket(
+            $host,
+            $port,
+            $context,
+            $debugHandler
+        );
+        $transport->setDebug(true);
         $transport->open();
     }
 
@@ -196,12 +198,6 @@ class TSSLSocketTest extends TestCase
             ]
         );
         $debugHandler = null;
-        $transport = new TSSLSocket(
-            $host,
-            $port,
-            $context,
-            $debugHandler
-        );
 
         $this->getFunctionMock('Thrift\Transport', 'stream_socket_client')
              ->expects($this->once())
@@ -214,6 +210,14 @@ class TSSLSocketTest extends TestCase
                  $context #$context
              )
              ->willReturn(fopen('php://memory', 'r+'));
+
+        $transport = new TSSLSocket(
+            $host,
+            $port,
+            $context,
+            $debugHandler
+        );
+
 
         $transport->open();
         $this->assertTrue($transport->isOpen());
