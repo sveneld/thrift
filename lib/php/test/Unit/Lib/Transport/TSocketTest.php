@@ -17,8 +17,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
- * @package thrift.transport
  */
 
 namespace Test\Thrift\Unit\Lib\Transport;
@@ -560,6 +558,8 @@ class TSocketTest extends TestCase
      */
     public function testReadFail(
         $streamSelectResult,
+        $freadResult,
+        $feofResult,
         $expectedException,
         $expectedMessage,
         $expectedCode
@@ -581,6 +581,18 @@ class TSocketTest extends TestCase
              )
              ->willReturn($streamSelectResult);
 
+        $this->getFunctionMock('Thrift\Transport', 'fread')
+             ->expects($this->exactly($streamSelectResult ? 1 : 0))
+             ->with(
+                 $handle,
+                 5
+             )
+             ->willReturn($freadResult);
+        $this->getFunctionMock('Thrift\Transport', 'feof')
+             ->expects($this->exactly($feofResult ? 1 : 0))
+             ->with($handle)
+             ->willReturn($feofResult);
+
         $this->expectException($expectedException);
         $this->expectExceptionMessage($expectedMessage);
         $this->expectExceptionCode($expectedCode);
@@ -600,21 +612,58 @@ class TSocketTest extends TestCase
     {
         yield 'stream_select timeout' => [
             'streamSelectResult' => 0,
+            'freadResult' => '',
+            'feofResult' => false,
             'expectedException' => TTransportException::class,
             'expectedMessage' => 'TSocket: timed out reading 5 bytes from localhost:9090',
             'expectedCode' => 0,
         ];
         yield 'stream_select fail read' => [
             'streamSelectResult' => 1,
+            'freadResult' => '',
+            'feofResult' => true,
             'expectedException' => TTransportException::class,
             'expectedMessage' => 'TSocket read 0 bytes',
             'expectedCode' => 0,
         ];
         yield 'stream_select fail' => [
             'streamSelectResult' => false,
+            'freadResult' => '',
+            'feofResult' => false,
             'expectedException' => TTransportException::class,
             'expectedMessage' => 'TSocket: Could not read 5 bytes from localhost:9090',
             'expectedCode' => 0,
         ];
+        yield 'fread false' => [
+            'streamSelectResult' => 1,
+            'freadResult' => false,
+            'feofResult' => false,
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket: Could not read 5 bytes from localhost:9090',
+            'expectedCode' => 0,
+        ];
+        yield 'fread empty' => [
+            'streamSelectResult' => 1,
+            'freadResult' => '',
+            'feofResult' => true,
+            'expectedException' => TTransportException::class,
+            'expectedMessage' => 'TSocket read 0 bytes',
+            'expectedCode' => 0,
+        ];
+    }
+
+    public function testFlush()
+    {
+        $host = 'localhost';
+        $port = 9090;
+        $persist = false;
+        $debugHandler = null;
+        $transport = new TSocket(
+            $host,
+            $port,
+            $persist,
+            $debugHandler
+        );
+        $this->assertNUll($transport->flush());
     }
 }
