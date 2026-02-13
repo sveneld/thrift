@@ -244,7 +244,7 @@ class AbstractTest(unittest.TestCase):
         try:
             self.client.testException('TException')
             self.fail("should have gotten exception")
-        except TException as x:
+        except TException:
             pass
 
         # Should not throw
@@ -320,6 +320,7 @@ class TPedanticSequenceIdProtocolWrapper(TProtocolDecorator.TProtocolDecorator):
     Wraps any protocol with sequence ID checking: looks for outbound
     uniqueness as well as request/response alignment.
     """
+
     def __init__(self, protocol):
         # TProtocolDecorator.__new__ does all the heavy lifting
         pass
@@ -335,7 +336,6 @@ class TPedanticSequenceIdProtocolWrapper(TProtocolDecorator.TProtocolDecorator):
             name, type, seqid)
 
     def readMessageBegin(self):
-        global LAST_SEQID
         (name, type, seqid) =\
             super(TPedanticSequenceIdProtocolWrapper, self).readMessageBegin()
         if LAST_SEQID != seqid:
