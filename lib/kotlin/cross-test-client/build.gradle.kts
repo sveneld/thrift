@@ -50,6 +50,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
+kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8

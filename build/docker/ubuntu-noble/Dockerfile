@@ -55,7 +55,6 @@ RUN curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - &
 RUN mkdir -p /etc/apt/keyrings && \
   curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
   echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-
 ### install general dependencies
 RUN apt-get update -yq && \
   apt-get install -y --no-install-recommends \
@@ -191,6 +190,7 @@ RUN apt-get install -y --no-install-recommends \
   ant \
   ant-optional \
   maven \
+  openjdk-8-jdk-headless \
   openjdk-17-jdk-headless && \
   `# Gradle` \
   wget https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip -q -O /tmp/gradle-$GRADLE_VERSION-bin.zip && \
@@ -207,9 +207,14 @@ RUN apt-get install -y --no-install-recommends \
 # lua5.3 does not install alternatives!
 # need to update our luasocket code, lua doesn't have luaL_openlib any more
 
-RUN apt-get install -y --no-install-recommends \
-  `# Node.js dependencies` \
-  nodejs
+ENV NODE_VERSION 22.22.2
+ENV NODE_DOWNLOAD_SHA256 88fd1ce767091fd8d4a99fdb2356e98c819f93f3b1f8663853a2dee9b438068a
+RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" -o /tmp/node.tar.xz && \
+  echo "${NODE_DOWNLOAD_SHA256}  /tmp/node.tar.xz" | sha256sum -c - && \
+  tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 --no-same-owner && \
+  rm -f /tmp/node.tar.xz && \
+  node --version && \
+  npm --version
 
 # Test dependencies for running puppeteer
 RUN apt-get install -y --no-install-recommends \
@@ -267,6 +272,15 @@ RUN apt-get install -y --no-install-recommends \
   ruby-dev \
   ruby-bundler
 
+RUN mkdir -p /home/${user}/.gem /home/${user}/.bundle && \
+    chown -R ${uid}:${gid} /home/${user}/.gem /home/${user}/.bundle
+ENV GEM_HOME /home/${user}/.gem
+ENV GEM_PATH /home/${user}/.gem
+ENV BUNDLE_USER_HOME /home/${user}/.bundle
+ENV BUNDLE_APP_CONFIG /home/${user}/.bundle
+ENV BUNDLE_PATH /home/${user}/.bundle
+ENV PATH /home/${user}/.gem/bin:$PATH
+
 USER ${user}
 RUN `# Rust dependencies` \
     curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain 1.83.0 -y
@@ -287,6 +301,8 @@ RUN apt-get install -yq \
 
 ENV PATH=/usr/share/swift/usr/bin:$PATH
 RUN swift --version
+ENV JAVA8_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV JAVA17_HOME /usr/lib/jvm/java-17-openjdk-amd64
 
 # Locale(s) for cpp unit tests
 RUN apt-get install -y --no-install-recommends \

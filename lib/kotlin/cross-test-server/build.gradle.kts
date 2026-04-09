@@ -46,6 +46,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
+kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+
 tasks {
     application {
         applicationName = "TestServer"

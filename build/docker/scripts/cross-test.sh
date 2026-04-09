@@ -2,7 +2,7 @@
 set -ev
 
 ./bootstrap.sh
-./configure --enable-tutorial=no
+./configure --enable-tutorial=no --disable-dependency-tracking
 make -j3 precross
 
 set +e
