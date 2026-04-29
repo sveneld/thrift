@@ -1,4 +1,5 @@
 # encoding: UTF-8
+# frozen_string_literal: true
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -21,6 +22,16 @@
 require 'spec_helper'
 
 describe Thrift::CompactProtocol do
+  INTEGER_BOUNDARY_TESTS = {
+    :i32 => [-(2**31), (2**31) - 1],
+    :i64 => [-(2**63), (2**63) - 1]
+  }
+
+  INTEGER_MINIMUM_ENCODINGS = {
+    :i32 => [0xff, 0xff, 0xff, 0xff, 0x0f],
+    :i64 => [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01]
+  }
+
   TESTS = {
     :byte => (-127..127).to_a,
     :i16 => (0..14).map { |shift| [1 << shift, -(1 << shift)] }.flatten.sort,
@@ -69,6 +80,54 @@ describe Thrift::CompactProtocol do
         proto.read_field_end
       end
     end
+  end
+
+  it "should round-trip signed integer boundaries correctly" do
+    INTEGER_BOUNDARY_TESTS.each_pair do |primitive_type, test_values|
+      test_values.each do |value|
+        trans = Thrift::MemoryBufferTransport.new
+        proto = Thrift::CompactProtocol.new(trans)
+
+        proto.send(writer(primitive_type), value)
+        expect(proto.send(reader(primitive_type))).to eq(value)
+      end
+    end
+  end
+
+  it "should encode signed integer minima with the canonical zigzag varint bytes" do
+    INTEGER_MINIMUM_ENCODINGS.each_pair do |primitive_type, expected_bytes|
+      trans = Thrift::MemoryBufferTransport.new
+      proto = Thrift::CompactProtocol.new(trans)
+
+      proto.send(writer(primitive_type), INTEGER_BOUNDARY_TESTS.fetch(primitive_type).first)
+      expect(trans.read(trans.available).bytes).to eq(expected_bytes)
+    end
+  end
+
+  it "should decode i32 minima from direct canonical zigzag bytes" do
+    trans = Thrift::MemoryBufferTransport.new
+    trans.write(INTEGER_MINIMUM_ENCODINGS[:i32].pack("C*"))
+
+    proto = Thrift::CompactProtocol.new(trans)
+    expect(proto.read_i32).to eq(INTEGER_BOUNDARY_TESTS[:i32].first)
+  end
+
+  it "should decode i64 minima from direct canonical zigzag bytes" do
+    trans = Thrift::MemoryBufferTransport.new
+    trans.write(INTEGER_MINIMUM_ENCODINGS[:i64].pack("C*"))
+
+    proto = Thrift::CompactProtocol.new(trans)
+    expect(proto.read_i64).to eq(INTEGER_BOUNDARY_TESTS[:i64].first)
+  end
+
+  it "should read binary values with multi-byte varint32 lengths" do
+    payload = "x" * 128
+    trans = Thrift::MemoryBufferTransport.new
+    trans.write([0x80, 0x01].pack("C*"))
+    trans.write(payload)
+
+    proto = Thrift::CompactProtocol.new(trans)
+    expect(proto.read_binary).to eq(payload)
   end
 
   it "should write a uuid" do
@@ -168,6 +227,46 @@ describe Thrift::CompactProtocol do
   it "should provide a reasonable to_s" do
     trans = Thrift::MemoryBufferTransport.new
     expect(Thrift::CompactProtocol.new(trans).to_s).to eq("compact(memory)")
+  end
+
+  it "should write a frozen non-binary string without mutating the input" do
+    trans = Thrift::MemoryBufferTransport.new
+    prot = Thrift::CompactProtocol.new(trans)
+    buffer = "abc \u20AC".encode("UTF-8").freeze
+
+    prot.write_binary(buffer)
+
+    expect(buffer.encoding).to eq(Encoding::UTF_8)
+    expect(buffer).to be_frozen
+    expect(trans.read(trans.available).unpack("C*")).to eq([0x07, 0x61, 0x62, 0x63, 0x20, 0xE2, 0x82, 0xAC])
+  end
+
+  it "should reject a varint with more than 10 continuation bytes" do
+    trans = Thrift::MemoryBufferTransport.new(([0x80] * 11).pack("C*"))
+    proto = Thrift::CompactProtocol.new(trans)
+    expect { proto.read_i64 }.to raise_error(Thrift::ProtocolException) do |e|
+      expect(e.type).to eq(Thrift::ProtocolException::INVALID_DATA)
+    end
+  end
+
+  it "should accept a valid 10-byte varint" do
+    trans = Thrift::MemoryBufferTransport.new((([0x80] * 9) + [0x01]).pack("C*"))
+    proto = Thrift::CompactProtocol.new(trans)
+    expect { proto.read_i64 }.not_to raise_error
+  end
+
+  it "should reject a 32-bit varint with more than 5 continuation bytes" do
+    trans = Thrift::MemoryBufferTransport.new(([0x80] * 6).pack("C*"))
+    proto = Thrift::CompactProtocol.new(trans)
+    expect { proto.read_i32 }.to raise_error(Thrift::ProtocolException) do |e|
+      expect(e.type).to eq(Thrift::ProtocolException::INVALID_DATA)
+    end
+  end
+
+  it "should accept a valid 5-byte varint for i32" do
+    trans = Thrift::MemoryBufferTransport.new((([0x80] * 4) + [0x0f]).pack("C*"))
+    proto = Thrift::CompactProtocol.new(trans)
+    expect { proto.read_i32 }.not_to raise_error
   end
 
   class JankyHandler

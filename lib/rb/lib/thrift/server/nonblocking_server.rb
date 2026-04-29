@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -106,7 +107,7 @@ module Thrift
         @num_threads = num
         @logger = logger
         @connections = []
-        @buffers = Hash.new { |h, k| h[k] = '' }
+        @buffers = Hash.new { |h, k| h[k] = Bytes.empty_byte_buffer }
         @signal_queue = Queue.new
         @signal_pipes = IO.pipe
         @signal_pipes[1].sync = true
@@ -138,7 +139,12 @@ module Thrift
 
       def ensure_closed
         kill_worker_threads if @worker_threads
-        @iom_thread.kill
+        if @iom_thread&.alive?
+          @iom_thread.kill
+          @iom_thread.join
+        end
+        close_connections
+        close_signal_pipes
       end
 
       private
@@ -244,6 +250,26 @@ module Thrift
           t.kill if t.status
         end
         @worker_threads.clear
+      end
+
+      def close_connections
+        @connections.each do |fd|
+          begin
+            fd.close
+          rescue IOError, SystemCallError, TransportException
+          end
+        end
+        @connections.clear
+        @buffers.clear
+      end
+
+      def close_signal_pipes
+        @signal_pipes.each do |pipe|
+          begin
+            pipe.close unless pipe.closed?
+          rescue IOError
+          end
+        end
       end
 
       def slice_frame!(buf)

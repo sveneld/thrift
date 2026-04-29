@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -61,11 +62,6 @@ module Thrift
       [fname, mtype, rseqid]
     end
 
-    def reply_seqid(rseqid)
-      expected_seqid = dequeue_pending_seqid
-      !expected_seqid.nil? && rseqid == expected_seqid
-    end
-
     def validate_message_begin(fname, mtype, rseqid, expected_name)
       expected_seqid = dequeue_pending_seqid
 
@@ -100,13 +96,6 @@ module Thrift
       result.read(@iprot)
       @iprot.read_message_end
       result
-    end
-
-    def handle_exception(mtype)
-      if mtype == MessageTypes::EXCEPTION
-        dequeue_pending_seqid
-        raise_application_exception
-      end
     end
 
     private

@@ -1,4 +1,5 @@
 # encoding: ascii-8bit
+# frozen_string_literal: true
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -227,6 +228,16 @@ shared_examples_for 'a binary protocol' do
     a = @trans.read(@trans.available)
     expect(a.encoding).to eq(Encoding::BINARY)
     expect(a.unpack('C*')).to eq([0x00, 0x00, 0x00, 0x04, 0x00, 0x01, 0x02, 0x03])
+  end
+
+  it 'should write a frozen non-binary string without mutating the input' do
+    buffer = "abc \u20AC".encode('UTF-8').freeze
+    @prot.write_binary(buffer)
+    a = @trans.read(@trans.available)
+    expect(buffer.encoding).to eq(Encoding::UTF_8)
+    expect(buffer).to be_frozen
+    expect(a.encoding).to eq(Encoding::BINARY)
+    expect(a.unpack('C*')).to eq([0x00, 0x00, 0x00, 0x07, 0x61, 0x62, 0x63, 0x20, 0xE2, 0x82, 0xAC])
   end
 
   it "should error gracefully when trying to write a nil string" do

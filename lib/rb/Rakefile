@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -21,6 +22,7 @@ require 'rubygems'
 require 'rake'
 require 'rake/clean'
 require 'rspec/core/rake_task'
+require 'bundler/gem_tasks'
 
 THRIFT = '../../compiler/cpp/thrift'
 
@@ -105,7 +107,7 @@ task :test do
 end
 
 desc 'Run benchmarking of NonblockingServer'
-task :benchmark do
+task :benchmark => [:'gen-rb:benchmark'] do
   ruby 'benchmark/benchmark.rb'
 end
 

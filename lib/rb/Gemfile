@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 source "https://rubygems.org"
 
 gemspec
@@ -6,4 +7,4 @@ gemspec
 gem 'cgi'
 gem 'ostruct'
 
-eval_gemfile File.expand_path("Gemfile.linters", __dir__)
+eval_gemfile "Gemfile.linters"

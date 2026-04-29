@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+# frozen_string_literal: true
 $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
@@ -12,7 +13,7 @@ Gem::Specification.new do |s|
   s.license     = 'Apache-2.0'
   s.extensions  = ['ext/extconf.rb']
 
-  s.required_ruby_version = '>= 2.4.0'
+  s.required_ruby_version = '>= 2.7.0'
 
   s.rdoc_options = %w[--line-numbers --inline-source --title Thrift --main README]
 
@@ -32,7 +33,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pry',                '~> 0.11.3'
   s.add_development_dependency 'pry-byebug',         '~> 3.6'
   s.add_development_dependency 'pry-stack_explorer', '~> 0.4.9.2'
-  s.add_development_dependency 'rack',               '>= 2.2.20'
+  s.add_development_dependency 'rack',               '>= 2.2.23'
   s.add_development_dependency 'rack-test',          '~> 0.8.3'
   s.add_development_dependency 'rake',               '~> 13.3'
   s.add_development_dependency 'rspec',              '~> 3.7'
