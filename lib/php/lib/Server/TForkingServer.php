@@ -43,7 +43,7 @@ class TForkingServer extends TServer
                 $transport = $this->transport_->accept();
 
                 if ($transport != null) {
-                    $pid = pcntl_fork();
+                    $pid = $this->fork();
 
                     if ($pid > 0) {
                         $this->handleParent($transport, $pid);
@@ -91,7 +91,7 @@ class TForkingServer extends TServer
         } catch (TTransportException $e) {
         }
 
-        exit(0);
+        $this->terminate(0);
     }
 
     /**
@@ -102,13 +102,57 @@ class TForkingServer extends TServer
     private function collectChildren()
     {
         foreach ($this->children_ as $pid => $transport) {
-            if (pcntl_waitpid($pid, $status, WNOHANG) > 0) {
+            if ($this->waitPid($pid, $status, $this->waitNoHangOption()) > 0) {
                 unset($this->children_[$pid]);
                 if ($transport) {
                     @$transport->close();
                 }
             }
         }
+    }
+
+    /**
+     * Forks the current process.
+     *
+     * @return int
+     */
+    protected function fork()
+    {
+        return pcntl_fork();
+    }
+
+    /**
+     * Waits for a child process.
+     *
+     * @param int $pid
+     * @param int|null $status
+     * @param int $options
+     * @return int
+     */
+    protected function waitPid($pid, &$status, $options)
+    {
+        return pcntl_waitpid($pid, $status, $options);
+    }
+
+    /**
+     * Returns the non-blocking wait option.
+     *
+     * @return int
+     */
+    protected function waitNoHangOption()
+    {
+        return \WNOHANG;
+    }
+
+    /**
+     * Terminates the child process.
+     *
+     * @param int $status
+     * @return void
+     */
+    protected function terminate($status)
+    {
+        exit($status);
     }
 
     /**

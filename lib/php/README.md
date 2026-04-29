@@ -51,6 +51,30 @@ apcu_fetch(), apcu_store()
     APCu cache is used by the TSocketPool class. If you do not have APCu installed,
     Thrift will fill in null stub function definitions.
 
+# Testing and Coverage
+
+Run the PHP unit and integration tests from the repository root:
+
+```
+composer install
+vendor/bin/phpunit -c lib/php/phpunit.xml
+```
+
+Integration tests require generated fixtures under `lib/php/test/Resources/packages`.
+The CI workflow generates them with `compiler/cpp/thrift` before invoking PHPUnit.
+
+To collect PHP coverage for `lib/php/lib`, use the coverage helper with Xdebug or
+PCOV enabled:
+
+```
+build/docker/scripts/php-coverage.sh
+```
+
+The helper regenerates the PHP test fixtures, runs `lib/php/phpunit.xml`, and writes
+HTML plus Clover reports to `/tmp/thrift-php-coverage` by default. Override
+`THRIFT`, `PHPUNIT`, `PHP_BIN`, or `COVERAGE_DIR` when using a non-default compiler,
+PHP runtime, PHPUnit binary, or output location.
+
 # Breaking Changes
 
 ## 0.12.0

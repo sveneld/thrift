@@ -23,16 +23,64 @@
 namespace Test\Thrift\Unit\Lib\Serializer;
 
 use PHPUnit\Framework\TestCase;
+use Test\Thrift\Unit\Lib\Serializer\Fixture\BinarySerializerTestStruct;
+use Thrift\Exception\TTransportException;
+use Thrift\Protocol\TBinaryProtocolAccelerated;
+use Thrift\Serializer\TBinarySerializer;
+use Thrift\Transport\TMemoryBuffer;
 
 class TBinarySerializerTest extends TestCase
 {
-    public function testSerialize()
+    public function testSerializeWritesTheFallbackBinaryPayload(): void
     {
-        $this->markTestIncomplete('Could not test static function which create instances during execution');
+        $this->skipWhenAcceleratedExtensionIsLoaded();
+
+        $object = new BinarySerializerTestStruct(array('message' => 'hello', 'number' => 42));
+
+        $this->assertSame($this->writeManually($object), TBinarySerializer::serialize($object));
     }
 
-    public function testDeserialize()
+    public function testDeserializeReadsTheFallbackBinaryPayload(): void
     {
-        $this->markTestIncomplete('Could not test static function which create instances during execution');
+        $this->skipWhenAcceleratedExtensionIsLoaded();
+
+        $object = new BinarySerializerTestStruct(array('message' => 'hello', 'number' => 42));
+
+        $deserialized = TBinarySerializer::deserialize(
+            $this->writeManually($object),
+            BinarySerializerTestStruct::class
+        );
+
+        $this->assertInstanceOf(BinarySerializerTestStruct::class, $deserialized);
+        $this->assertNotSame($object, $deserialized);
+        $this->assertSame($object->message, $deserialized->message);
+        $this->assertSame($object->number, $deserialized->number);
+    }
+
+    public function testDeserializeRejectsTruncatedPayload(): void
+    {
+        $this->skipWhenAcceleratedExtensionIsLoaded();
+
+        $this->expectException(TTransportException::class);
+
+        TBinarySerializer::deserialize('', BinarySerializerTestStruct::class);
+    }
+
+    private function writeManually(BinarySerializerTestStruct $object): string
+    {
+        $transport = new TMemoryBuffer();
+        $protocol = new TBinaryProtocolAccelerated($transport);
+
+        $object->write($protocol);
+        $protocol->getTransport()->flush();
+
+        return $transport->getBuffer();
+    }
+
+    private function skipWhenAcceleratedExtensionIsLoaded(): void
+    {
+        if (function_exists('thrift_protocol_write_binary') || function_exists('thrift_protocol_read_binary')) {
+            $this->markTestSkipped('Fallback serializer unit tests require the thrift_protocol extension to be disabled.');
+        }
     }
 }
