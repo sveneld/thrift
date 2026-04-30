@@ -17,13 +17,15 @@
 # under the License.
 #
 
-PHP_THRIFT_COMPILER=$(top_builddir)/compiler/cpp/thrift
+$(THRIFT):
+	$(MAKE) -C $(top_builddir)/compiler/cpp/src thrift/libparse.a
+	$(MAKE) -C $(top_builddir)/compiler/cpp thrift
 
-stubs: $(PHP_THRIFT_COMPILER) ../ThriftTest.thrift
-	$(PHP_THRIFT_COMPILER) --gen php ../ThriftTest.thrift
-	$(PHP_THRIFT_COMPILER) --gen php:inlined ../ThriftTest.thrift
+stubs: $(THRIFT) ../ThriftTest.thrift
+	$(THRIFT) --gen php ../ThriftTest.thrift
+	$(THRIFT) --gen php:inlined ../ThriftTest.thrift
 	$(MKDIR_P) gen-php-classmap
-	$(PHP_THRIFT_COMPILER) -out gen-php-classmap --gen php:classmap,server,rest ../ThriftTest.thrift
+	$(THRIFT) -out gen-php-classmap --gen php:classmap,server,rest ../ThriftTest.thrift
 
 php_ext_dir:
 	mkdir -p php_ext_dir
